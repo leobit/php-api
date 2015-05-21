@@ -66,10 +66,8 @@ class Leobit {
         
         $curlOptions = array(
             CURLOPT_URL => $url,
-            //CURLOPT_SSL_VERIFYPEER => 1,
-            //CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_FOLLOWLOCATION => true, // allowing redirects and https
-            CURLOPT_SSL_VERIFYPEER => false, //allowing redirects and https
+            CURLOPT_FOLLOWLOCATION => true, 
+            CURLOPT_SSL_VERIFYPEER => false, 
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; Leobit PHP Client; ' . php_uname('s') . '; PHP/' . phpversion() . ')'
         );
