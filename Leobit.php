@@ -9,10 +9,10 @@
 
 class Leobit {
     
-	private $key;
-	private $secret;
+    private $key;
+    private $secret;
     private $ch;
-	private $client_id;
+    private $client_id;
     private $accessToken;
     private $apiUrl = 'https://api.leobit.net/';
     public static $PRIVATE_METHODS = array('balance', 'cancelorder', 'placeorder', 'withdraw', 'openorders');
@@ -35,7 +35,7 @@ class Leobit {
         curl_close($this->ch);
     }
     
-	public function query($path, array $req = array(), $verb = 'post', $isTokenRequest = false) {
+    public function query($path, array $req = array(), $verb = 'post', $isTokenRequest = false) {
         
         if(in_array($path, self::$PRIVATE_METHODS) && !$isTokenRequest) {
             
@@ -94,7 +94,8 @@ class Leobit {
         
 	}
     
-	public function placeOrder($type, $amount, $price, $currency = 'btc') {
+
+    public function placeOrder($type, $amount, $price, $currency = 'btc') {
 		
         return $this->query('placeorder', array(
             'type' => $type, 
@@ -105,7 +106,7 @@ class Leobit {
         
 	}
 
-	public function cancelOrder($orderId) {
+    public function cancelOrder($orderId) {
 		return $this->query('cancelorder',  array('orderId' => $orderId));
 	}
 
