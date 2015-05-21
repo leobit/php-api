@@ -1,6 +1,11 @@
 # php-api
 PHP class for leobit.net API
 
+##dependecies 
+[jQuery](https://jquery.com/)
+[pusher](https://pusher.com/)
+
+
 ##example
 ```
 include 'Leobit.php';
