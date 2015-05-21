@@ -17,8 +17,7 @@ class Leobit {
     private $apiUrl = 'https://api.leobit.net/';
     public static $PRIVATE_METHODS = array('balance', 'cancelorder', 'placeorder', 'withdraw', 'openorders');
     
-	public function __construct($key, $secret, $email)
-	{
+	public function __construct($key, $secret, $email) {
         $this->ch = curl_init();
 
 		if (isset($secret) && isset($key) && isset($email))
