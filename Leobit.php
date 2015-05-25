@@ -57,7 +57,7 @@ class Leobit {
                 $response = $this->query('authenticate', $data, 'post', true);  
 
                 if(!$response['success']) 
-                    throw new \Exception('For calling private methods you have to set KEY, SECRET and EMAIL.');
+                    throw new \Exception($response['result']['message']);
                 
                 $this->accessToken = $response['result']['token'];
 
