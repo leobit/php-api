@@ -11,27 +11,33 @@ class Leobit {
     
     private $key;
     private $secret;
-    private $ch;
-    private $client_id;
-    private $accessToken;
+    private $email;
     private $apiUrl = 'https://api.leobit.net/';
+    
+    protected $accessToken;
+    protected $ch;
+    
     public static $PRIVATE_METHODS = array('balance', 'cancelorder', 'placeorder', 'withdraw', 'openorders');
     
-    public function __construct($key, $secret, $email) {
+    
+    public function __construct($key = null, $secret = null, $email = null) {
+        
         $this->ch = curl_init();
-
-		if (isset($secret) && isset($key) && isset($email))
-		{
-			$this->key = $key;
-			$this->secret = $secret;
-			$this->client_id = $email;
-            
-		} else
-			die("NO KEY/SECRET/CLIENT ID");
-	}
+        
+        $this->key = $key;
+        $this->secret = $secret;
+        $this->email = $email;    
+        
+    }
     
     public function __destruct() {
         curl_close($this->ch);
+    }
+    
+    public function setCredentials($key, $secret, $email) {
+        $this->key = $key;
+        $this->email = $email;
+        $this->secret = $secret;
     }
     
     public function query($path, array $req = array(), $verb = 'post', $isTokenRequest = false) {
@@ -39,7 +45,10 @@ class Leobit {
         if(in_array($path, self::$PRIVATE_METHODS) && !$isTokenRequest) {
             
             if(!$this->accessToken) {
-
+                
+                if(!isset($this->email, $this->key, $this->secret))
+                    throw new \Exception('For calling private methods you have to set KEY, SECRET and EMAIL.');
+                
                 $mt = explode(' ', microtime());
                 $data['nonce'] = $mt[1] . substr($mt[0], 2, 6);
                 $data['apiKey'] = $this->key;
@@ -47,10 +56,12 @@ class Leobit {
 
                 $response = $this->query('authenticate', $data, 'post', true);  
 
-                if(!$response['success']) die($response['message']);
+                if(!$response['success']) 
+                    throw new \Exception('For calling private methods you have to set KEY, SECRET and EMAIL.');
+                
                 $this->accessToken = $response['result']['token'];
 
-            } 
+            }
 
             $req['token'] = $this->accessToken;
         }
@@ -60,40 +71,48 @@ class Leobit {
         
         $url = $this->apiUrl . $path;
         
-        if ($verb == 'post') curl_setopt($this->ch, CURLOPT_POSTFIELDS, $post_data);
-        elseif ($verb == 'get') $url.='/?'.$post_data;
-        
         $curlOptions = array(
-            CURLOPT_URL => $url,
             CURLOPT_FOLLOWLOCATION => true, 
-            CURLOPT_SSL_VERIFYPEER => false, 
+            CURLOPT_MAXREDIRS => 1,
+            CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; Leobit PHP Client; ' . php_uname('s') . '; PHP/' . phpversion() . ')'
         );
+       
+        if ($verb == 'post') 
+            $curlOptions[CURLOPT_POSTFIELDS] = $post_data;
+        elseif ($verb == 'get') {
+            $curlOptions[CURLOPT_HTTPGET] = true;
+            $url.='/?'.$post_data;
+        } else 
+            throw new \Exception('API supports only POST and GET methods.');
+        
+        $curlOptions[CURLOPT_URL] = $url;
+        
         curl_setopt_array($this->ch, $curlOptions);
 		
-		$res = curl_exec($this->ch);
+	$res = curl_exec($this->ch);
         
         if ($res === false)
-			throw new \Exception('Could not get reply: ' . curl_error($this->ch));
-		
-		curl_reset($this->ch);
-        $dec = json_decode($res, true);
-		if (is_null($dec))
-			throw new \Exception('Invalid data received, please make sure connection is working and requested API exists');
+		throw new \Exception('Could not get reply: ' . curl_error($this->ch));
         
-		return $dec;
-	}
+        $dec = json_decode($res, true);
+	if (is_null($dec))
+		throw new \Exception('Invalid data received, please make sure connection is working and requested API exists, data: '.$res);
+        
+	return $dec;
+   }
     
     private function get_signature($nonce) {
 	  
-	  $message = $nonce.$this->client_id.$this->key;
+	$message = $nonce.$this->email.$this->key;
 	  
-	  return strtoupper(hash_hmac('sha256', $message, $this->secret));
+	return strtoupper(hash_hmac('sha256', $message, $this->secret));
         
-	}
+    }
     
-
+	
     public function placeOrder($type, $amount, $price, $currency = 'btc') {
 		
         return $this->query('placeorder', array(
@@ -103,11 +122,12 @@ class Leobit {
             'currency' => $currency
         ));
         
-	}
+    }
 
+    
     public function cancelOrder($orderId) {
-		return $this->query('cancelorder',  array('orderId' => $orderId));
-	}
+	return $this->query('cancelorder',  array('orderId' => $orderId));
+    }
 
 
     
@@ -132,6 +152,3 @@ class Leobit {
     }
 
 }
-
-
-
