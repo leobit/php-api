@@ -22,7 +22,7 @@ $orderbook = $leobitApi->getOrderbook('both', 'btc');
 ``` 
 if you want to use same instance for private methods you have to authenticate
 ```
-$leobitApi->SetCredentials('myKey','mySecret','example@email');
+$leobitApi->setCredentials('myKey','mySecret','example@email');
 $orderResult = $leobitApi->placeOrder('sell', '100', '0.001', 'btc');
 ```
 ###private methods
